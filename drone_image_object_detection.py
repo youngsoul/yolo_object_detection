@@ -298,9 +298,9 @@ def process_directory(image_dir: str, model_path: str = "yolo11x.pt", conf_thres
             frame_with_grid = frame
 
         cv2.imshow("grid", frame_with_grid)
-        image2 = extract_and_orient_inner_image(img_path)
-        if image2 is not None:
-            cv2.imshow("Extracted", image2)
+        # image2 = extract_and_orient_inner_image(img_path)
+        # if image2 is not None:
+        #     cv2.imshow("Extracted", image2)
         pause_to_view()
 
         detections = []  # aggregated detections from all tiles
@@ -426,9 +426,9 @@ def process_directory(image_dir: str, model_path: str = "yolo11x.pt", conf_thres
 
 def main():
     parser = argparse.ArgumentParser(description="Run YOLOv8 on all images in a directory and visualize detections with optional N×N tiling, per-tile scaling, and per-tile rotations.")
-    parser.add_argument("--image_dir", default="/Users/patrickryan/Development/machinelearning/yolo-sandbox/geekforgeeks/yolov8_object_detection/images/real_drone_photos/dog/images",  help="Path to directory containing images")
+    parser.add_argument("--image_dir", default="/Users/patrickryan/Development/machinelearning/yolo-sandbox/geekforgeeks/yolov8_object_detection/images/real_drone_photos/truck/images",  help="Path to directory containing images")
     parser.add_argument("--model", default="yolo11x.pt", help="Path to YOLO model weights (e.g., yolo11s.pt)")
-    parser.add_argument("--conf", type=float, default=0.6 , help="Confidence threshold for drawing boxes")
+    parser.add_argument("--conf", type=float, default=0.3 , help="Confidence threshold for drawing boxes")
     parser.add_argument("--grid", type=int, default=1, help="Grid size N for tiling (NxN). Use 1 for no tiling.")
     parser.add_argument("--show-grid", default=True, action="store_true", help="Overlay the grid lines on the image for visualization.")
     parser.add_argument("--tile-scale", type=float, default=1.0, help="Scale factor applied to each tile before inference (>0).")

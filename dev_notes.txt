@@ -1,0 +1,19 @@
+yolo11m.pt
+
+Dogs
+Accuracy: 86.84%  Correct: 132  Total: 152
+
+Car
+Accuracy: 70.54%  Correct: 79  Total: 112
+
+Bird
+Accuracy: 43.24%  Correct: 48  Total: 111
+
+Cat
+Accuracy: 82.24%  Correct: 88  Total: 107
+
+Motorcycle
+Accuracy: 44.83%  Correct: 52  Total: 116
+
+Truck
+Accuracy: 37.65%  Correct: 32  Total: 85
