@@ -5,6 +5,14 @@ from ultralytics import YOLO
 import time
 import math
 
+class_conf = {
+    "car": 0.51,
+    "bird": 0.6,
+    "cat": 0.7,
+    "dog": 0.35,
+    "motorcycle": 0.34,
+    "truck": 0.25
+}
 def get_image_contours(img):
 
     # Convert to grayscale and blur
@@ -151,11 +159,14 @@ def main(degrees: float = 0.0, conf_thres: float = 0.4, model_path: str = "yolo1
             # If there are boxes and any passes threshold, draw and break
             if result.boxes is not None and len(result.boxes) > 0:
                 for box in result.boxes:
+                    cls = int(box.cls[0])
+                    class_name = class_names[cls]
                     conf = float(box.conf[0])
-                    if conf >= conf_thres:
+                    class_confidence = class_conf.get(class_name, 0.51)
+                    print(f"  cls={class_name}  conf={conf:.2f} class_confidence={class_confidence:.2f}")
+
+                    if conf >= class_confidence:
                         x1, y1, x2, y2 = map(int, box.xyxy[0])
-                        cls = int(box.cls[0])
-                        class_name = class_names[cls]
                         if class_name in ["car", "bird", "cat", "dog", "motorcycle", "truck"]:
                             colour = getColours(cls)
                             cv2.rectangle(current_img, (x1, y1), (x2, y2), colour, 2)
