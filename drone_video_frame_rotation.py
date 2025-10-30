@@ -116,6 +116,8 @@ def main(degrees: float = 0.0, conf_thres: float = 0.4, model_path: str = "yolo1
             continue
 
         frame = cropped
+        cv2.imshow(winname="Cropped Video Output", mat=frame)
+        cv2.moveWindow("Cropped Video Output", 200, 300)
 
         # Determine rotation step and max iterations to cover ~360 degrees
         step = abs(degrees) % 360.0
@@ -192,9 +194,9 @@ def main(degrees: float = 0.0, conf_thres: float = 0.4, model_path: str = "yolo1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run YOLO on video frames with optional rotation.")
-    parser.add_argument("--degrees", type=float, default=45.0, help="Degrees to rotate each frame before inference (counter-clockwise).")
-    parser.add_argument("--conf", type=float, default=0.51, help="Confidence threshold for displaying detections.")
-    parser.add_argument("--model", type=str, default="yolo11x.pt", help="Path to YOLO model file.")
+    parser.add_argument("--degrees", type=float, default=30.0, help="Degrees to rotate each frame before inference (counter-clockwise).")
+    parser.add_argument("--conf", type=float, default=0.64, help="Confidence threshold for displaying detections.")
+    parser.add_argument("--model", type=str, default="yolo11n.pt", help="Path to YOLO model file.")
     parser.add_argument("--video", type=str, default="./videos/dexi_camera_all_classes.mp4", help="Path to input video file.")
     args = parser.parse_args()
 
