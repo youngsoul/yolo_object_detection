@@ -5,10 +5,63 @@ from ultralytics import YOLO
 import time
 import math
 
+def get_image_contours(img):
+
+    # Convert to grayscale and blur
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5,5), 0)
+
+    # Threshold to isolate dark regions
+    _, thresh = cv2.threshold(gray, 60, 255, cv2.THRESH_BINARY_INV)
+
+    # Find contours
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    return contours
+
+
+
+def crop_inner_region(image, contours):
+    # Validate inputs
+    if image is None or not contours:
+        return None
+
+    # Take the largest contour
+    c = max(contours, key=cv2.contourArea)
+
+    # Approximate polygon corners
+    epsilon = 0.02 * cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, epsilon, True)
+
+    # Ensure we got enough corner points (e.g., >= 3)
+    if approx is None or len(approx) < 3:
+        return None
+
+    # Extract bounding box extents from corner coords
+    xs = [p[0][0] for p in approx]
+    ys = [p[0][1] for p in approx]
+
+    x_min, x_max = min(xs), max(xs)
+    y_min, y_max = min(ys), max(ys)
+
+    # Validate sane bounds
+    if x_min >= x_max or y_min >= y_max:
+        return None
+
+    # Crop from original
+    cropped = image[y_min:y_max, x_min:x_max]
+
+    # Make sure crop isn't empty
+    if cropped.size == 0:
+        return None
+
+    return cropped
+
 def getColours(cls_num):
     """Generate unique colors for each class ID"""
     random.seed(cls_num)
-    return tuple(random.randint(0, 255) for _ in range(3))
+    return (0,255,0)
+    # return tuple(random.randint(0, 255) for _ in range(3))
 
 
 def rotate_image_bound(image, angle_degrees: float):
@@ -55,6 +108,15 @@ def main(degrees: float = 0.0, conf_thres: float = 0.4, model_path: str = "yolo1
 
         cv2.imshow(winname="Raw Video Output", mat=frame)
 
+        # try to get just the portion of the image with the
+        # object detection region
+        contours = get_image_contours(frame)
+        cropped = crop_inner_region(frame, contours)
+        if cropped is None:
+            continue
+
+        frame = cropped
+
         # Determine rotation step and max iterations to cover ~360 degrees
         step = abs(degrees) % 360.0
         if step == 0.0:
@@ -99,6 +161,16 @@ def main(degrees: float = 0.0, conf_thres: float = 0.4, model_path: str = "yolo1
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, colour, 2)
                             found = True
                             cv2.imshow(winname="Detected Rotated Yolo Output", mat=current_img)
+                            cv2.moveWindow("Detected Rotated Yolo Output", 0, 300)
+                            break
+                        else:
+                            tmp_img = current_img.copy()
+                            colour = getColours(cls)
+                            cv2.rectangle(tmp_img, (x1, y1), (x2, y2), colour, 2)
+                            cv2.putText(tmp_img, f"{class_name} {conf:.2f}", (x1, max(y1 - 10, 20)),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, colour, 2)
+                            cv2.imshow(winname="All Detections Yolo Output", mat=tmp_img)
+                            cv2.moveWindow("All Detections Yolo Output", 0, 600)
 
                 if found:
                     # Optional: Log the angle where detection was found
@@ -122,7 +194,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run YOLO on video frames with optional rotation.")
     parser.add_argument("--degrees", type=float, default=45.0, help="Degrees to rotate each frame before inference (counter-clockwise).")
     parser.add_argument("--conf", type=float, default=0.51, help="Confidence threshold for displaying detections.")
-    parser.add_argument("--model", type=str, default="yolo11m.pt", help="Path to YOLO model file.")
+    parser.add_argument("--model", type=str, default="yolo11x.pt", help="Path to YOLO model file.")
     parser.add_argument("--video", type=str, default="./videos/dexi_camera_all_classes.mp4", help="Path to input video file.")
     args = parser.parse_args()
 
